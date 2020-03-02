@@ -34,6 +34,10 @@ ggplot(question1frame, aes(x = pjt, fill=group)) + geom_histogram(binwidth=5, al
 
 t.test(police_trust, journalist_trust)
 
+# probably want wilcoxon
+
+wilcox.test(police_trust, journalist_trust, alternative = "two.sided")
+
 ############################################################################################### 
 # work for question 2
 ###############################################################################################
@@ -41,13 +45,34 @@ t.test(police_trust, journalist_trust)
 democrat = survey[which(survey$pid1d == 1),]
 republican = survey[which(survey$pid1d == 2),]
 
-parties = c()
+#make a list of dems
 parties = c( rep("republican", nrow(republican)), rep("democrat", nrow(democrat)))
+#make a list of repubs
+party_colors = c( rep("ff0000", nrow(republican)), rep("0000ff", nrow(democrat)))
 
-question2frame = data.frame(party = factor(parties), age = c(2018 - republican$birthyr), 2018 - democrat$birthyr)
+#make a dataframe for our q
+question2frame = data.frame(party = factor(parties), age = c(2018 - republican$birthyr), 2018 - democrat$birthyr, colors = party_colors)
+#find the means
 age_dat <- ddply(question2frame, "party", summarise, age.mean=mean(age))
 
+#plot it
 ggplot(question2frame, aes(x = age, fill=party)) + geom_histogram(binwidth=5, position="dodge") + 
-  geom_vline(data=age_dat, aes(xintercept=age.mean,  colour=party), linetype="dashed", size=1) + 
+  facet_grid(party ~ .) + 
+  geom_vline(data=age_dat, aes(xintercept=age.mean), linetype="dashed", size=1) + 
   xlab("Age") + 
   scale_fill_manual(values=c("#0000ff", "#ff0000"))
+
+
+#I think we can just get away with a student t-test?
+t.test(2018 - republican$birthyr, 2018 - democrat$birthyr)
+
+############################################################################################### 
+# work for question 3
+###############################################################################################
+
+independents = survey[which(survey$pid1d == 3),] #get all of our independents
+summary(independents$coord16) #do they think the Trump campaign coordinated with the Russians
+
+# how do we land with our indies?
+coord = independents[which(independents$coord16==1),]
+nocoord = independents[which(independents$coord16==2),]
