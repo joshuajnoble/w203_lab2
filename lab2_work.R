@@ -66,6 +66,8 @@ ggplot(question2frame, aes(x = age, fill=party)) + geom_histogram(binwidth=5, po
 #I think we can just get away with a student t-test?
 t.test(2018 - republican$birthyr, 2018 - democrat$birthyr)
 
+#doesn't look like there's much age difference tbh
+
 ############################################################################################### 
 # work for question 3
 ###############################################################################################
@@ -76,3 +78,20 @@ summary(independents$coord16) #do they think the Trump campaign coordinated with
 # how do we land with our indies?
 coord = independents[which(independents$coord16==1),]
 nocoord = independents[which(independents$coord16==2),]
+
+############################################################################################### 
+# work for question 4
+###############################################################################################
+
+voters = survey[which(survey$turnout18 < 4),] #get all of our voters who are sure they voted
+voters = voters[which(as.numeric(voters$geangry) > 0),] #get all of our voters who answered angry and afraid
+voters = voters[which(as.numeric(voters$geafraid) > 0),] #get all of our voters who answered angry and afraid
+
+question4frame = data.frame(emotion = c(rep("anger", nrow(voters)), rep("fear", nrow(voters))), response = c(voters$geangry, voters$geafraid))
+
+p = ggplot(question4frame, aes(x = question4frame$response, fill=emotion), stat="count") + geom_histogram(binwidth=1, position="dodge") + scale_x_continuous(breaks = c(1,2,3,4,5), labels=c("Not at all", "A little","Somewhat", "Very", "Extremely"))
+p
+
+#not sure if we can just run both?
+wilcox.test(voters$geangry, voters$geafraid,  alternative = "greater")
+wilcox.test(voters$geafraid, voters$geangry,  alternative = "greater")
