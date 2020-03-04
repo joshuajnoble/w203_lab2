@@ -45,6 +45,10 @@ wilcox.test(police_trust, journalist_trust, alternative = "two.sided")
 democrat = survey[which(survey$pid1d == 1),]
 republican = survey[which(survey$pid1d == 2),]
 
+#filter by all of our voters who are sure they voted
+democrat = democrat[which(democrat$turnout18 < 4),]
+republican = republican[which(republican$turnout18 < 4),]
+
 #make a list of dems
 parties = c( rep("republican", nrow(republican)), rep("democrat", nrow(democrat)))
 #make a list of repubs
@@ -62,11 +66,26 @@ ggplot(question2frame, aes(x = age, fill=party)) + geom_histogram(binwidth=5, po
   xlab("Age") + 
   scale_fill_manual(values=c("#0000ff", "#ff0000"))
 
-
 #I think we can just get away with a student t-test?
 t.test(2018 - republican$birthyr, 2018 - democrat$birthyr)
 
 #doesn't look like there's much age difference tbh
+
+
+################## jills work
+
+
+party <- survey$pid1d
+party_count <- length(party)
+# hist(party)
+year <- 2018 - survey$birthyr
+summary(year)
+#q2 <- data.frame(year, party)
+q2 <- data.frame(year, party, 2018 - year)
+#names(q2)[3] <- "age"
+q2 <- q2[which (q2$party == c(1,2)),]
+# head(q2)
+t.test(year ~ party, data = q2)
 
 ############################################################################################### 
 # work for question 3
