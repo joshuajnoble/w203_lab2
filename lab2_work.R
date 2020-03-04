@@ -75,6 +75,7 @@ t.test(2018 - republican$birthyr, 2018 - democrat$birthyr)
 ################## jills work
 
 
+party <- survey$pid1d
 party_count <- length(party)
 # hist(party)
 year <- 2018 - survey$birthyr
