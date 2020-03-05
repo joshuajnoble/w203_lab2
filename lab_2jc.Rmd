@@ -16,17 +16,20 @@ anes_data <- read.csv("~/Desktop/W203/homework/lab_2/anes_pilot_2018.csv")
 
 __1. Do US voters have more respect for the police or for journalists?__
 
-__Overview__
+__Overview.__
 Within the ANES pilot questions, two specific ones directly support the posed question:
 
   - How would you rate the police?\
   - How would you rate journalists?
   
-Though these questions do not provide a holistic assessment of public opinion, the do provide a start point for an initial perspective on sentiment trends.  This will provide a start point to compare the public opinions captured in the pilot study.
+Though these questions do not provide a holistic assessment of public opinion, the do provide a start point for an initial perspective on sentiment trends.   
 
-The context of these questions was in 'feeling thermometers' which have a numberical but categorical range from 0 too 100.
+__Operationalization.__
+The context of these questions was in 'feeling thermometers' which have a numberical but categorical range from 0 too 100.  An issue with these questions is that they are structured to assessing 'feelings towards' instead of 'respect for'. A further feature of this thermometer is the varied interpretation of the scale by respondents.
 
-__Initial Assessment__
+Values existed for all respondents for these two questions.  The expected range of the data for each of these survey questions is [0,100].  The police data meets this criteria; however, the press data does not.  This question possesses negative values, which indicates these was no respondent answer.  To prevent the results from being skewed by these values, the responses associated with those respondents were not included in the analysis.  Using this approach, the overall number of respondents reduced by 2.  The final data set analysed possessed data from 2498 respondents with values from 0 to 100 for both the press and police questions. 
+
+__Exploratory Data Analysis.__
 ```{r}
 press <- anes_data$ftjournal
 police <- anes_data$ftpolice
@@ -40,14 +43,13 @@ press_data <- data.frame(police,press)
 press_data <- press_data[-c(51),] # delete row with -7 value
 press_data <- press_data[-c(597),] # delete row with -7 value
 ```
+Include graphs......
 
-Values existed for all respondents for these two questions.  The expected range of the data for each of these survey questions is [0,100].  The police data meets this criteria; however, the press data does not.  This question possesses negative values, which indicates these was no respondent answer.  To prevent the results from being skewed by these values, the responses associated with those respondents were not included in the analysis.  Using this approach, the overall number of respondents reduced by 2.  The final data set analysed possessed data from 2498 respondents with values from 0 to 100 for both the press and police questions. 
-
+__Analysis__
 Though the data is numberical in nature, indivduals will use different scales when assessing their relative values on the thermometer.  Consequently, a linear relationship cannot be assumed to exist between the values.  This data feature supports the use of a non-parametric hypothesis test - namely the Wilcoxon Rank-Sum Test.  Employing the Hypothesis of Means for $H_O$ for this analysis capitalizes on the metric scale that the thermometer context provides.  For this question, the hypotheses tested were:
   - Null:  The means of the two groups is the same. $H_0:  E(Press) = E(Police)$
   - Alternative:  The means of the two groups are not the same.  $H_A:  E(Press) \neq E(Police)$
 
-__Analysis__
 ```{r}
 x <- press_data$police # police data
 y <- press_data$press # press data
@@ -74,13 +76,16 @@ The $r_s$ value obtained from this test was -0.123.  This indicates a weak negat
 __2.  Are Republican voters older or younger than Democratic voters?__
 
 __Overview.__
+Of keen interest in politics is the age of voters.  This has emerged as a topic of interest with the pubilc as it relates to enhanced gun control laws.  Youth affected by school mass shootings have opened the debate on whether the federal voting age in the United States should be lowered from 18 to 16.  The 26th Ammendment to the US Constitution establishes the voting age.  Though it was originally set at 21 years of age, a student movement in the 1960s in the midst of the Vietnam War lobbied for the age to be dropped to 18.  Armed with the slogan:  old enough to fight, old enough to vote', the movement successfully lobbied Congress to lower the voting age to 18 for national elections.
+
+__Operationalization.__
 Two entries within the survey directly support establishing a frame for this question.  These two questions are:\
 - What year were you born?\
 - Generally speaking, do you usually think of yourself as a Democrat, a Republican, an Independent, or what?
 
-Together, these questions, along with the assmption that surveyed individuals provided truthful data for these questions, creates an informed approach to answering which party has older voters.  The age of the respondent is a numberical value, and their party affiliation is categorical.  
+Together, these questions, along with the assmption that surveyed individuals provided truthful data for these questions, creates an informed estimate for approaching the question of which party has older voters.  The age of the respondent is a numberical value which subtracts 2018 from the provided respondent birth year.  Their party affiliation is categorical, and is a best estimate assessment of an individual's political association. 
 
-__Initial Assessment.__
+__Exploratory Data Analysis.__
 This type of data supports using the independent sample t-test.  One set of data is numberical (respondents' ages), and the other is categorical (Republican or Democrat). With this test, we conducted a comparison of means.  The hypotheses being tested were:\
  - $H_0: E(Republicans) = E(Democrats)$.\
  - $H_A: E(Republicans) \neq E(Democrats)$
@@ -102,6 +107,8 @@ q2 <- data.frame(year, party, age)
 q2 <- q2[which (q2$party == c(1,2)),] # [1,2,3] = [Dem, Rep, Independent] = [432,326,356]
 # head(q2)
 ```
+and then there were graphs....
+
 __Analysis.__
 
 ```{r}
@@ -128,39 +135,50 @@ t.test(age ~ party, data = q2_vote)
 ```
 
 __Outcome.__
-Including the constraint of having voted in the previous month's election conveys a distinctly different picture.  The p-value no longer supports not rejecting the null hypothesis.  The data does not support that the difference in means is zero.  A point of note is that for the Democrats, the average age between the two scenarios stayed quite constant (51.7 and 51.1).  However, for the Republicans, the average age of those that voted in the November election was 8 years older than Republicans at large from the survey.
 
 ```{r}
 library(effsize)
 cohen.d(age ~ party, data = q2_vote)
 ```
-Re-assessing the practical significance of the results on the adjusted dataset with the Cohen's d test now indicates a medium effect size.  These results indicate that the average age of Democrats at large in the survey and those that voted in the November 2018 election are consistent.  However, Republicans that voted in the November 2018 election are on average 8 years older than Republicans at large in the survey.
+Including the constraint of having voted in the previous month's election conveys a distinctly different picture.  The p-value no longer supports not rejecting the null hypothesis.  The data does not support that the difference in means is zero.  Re-assessing the practical significance of the results on the adjusted dataset with the Cohen's d test now indicates a medium effect size.  These results indicate that for the Democrats, the average age between the two scenarios remained fairly consistent (51.7 and 51.1).  However, for the Republicans, the average age of those that voted in the November 2018 election was 8 years older than Republicans at large from the survey.
 
 \pagebreak
 
 __3. Do a majority of independent voters believe that the federal investigations of Russia election interference are baseless?__
 
-__Overview.__
+__Overview.__ Prior to the 2016 presidential election, members of the US Congress publically disclosed the existence of attempted Russian interference activities. Robert Mueller, a former FBI director, led a Special Counsel Investigation from May 2017 to March 2019. This survey occurred while this Mueller's investigation was ongoing.
 
-__Initial Assessment.__
+__Operationalization.__
+Within the survey a specific section was dedicated to the Russia/Trump campaign investigation.  One question specifically addressed the Mueller Investigation, while the other two explicitly addressed public opinion regarding the Russian interference in the campaign.\
+
+- Do you think the Russian government probably interfered in the 2016 presidential election to try and help Donald Trump win, or do you think this probably did not happen?\
+- Do you think Donald Trump's 2016 campaign probably coordinated with the Russians, or do you think his campaign probably did not do this?\
+
+Both questions have potential to provide some insight into the question at hand.  Assessing the available data will help frame which ones will best inform the analysis.
+
+__Explorataory Data Analysis.__
+
+repleat with graphs.
+
 ```{r}
 
 q3 <- data.frame(anes_data$pid1d, anes_data$turnout18, anes_data$russia16, anes_data$coord16)
 colnames(q3) <- c("party", "voted", "russia_1", "russia_2")
 q3<- q3[which(q3$party == c(3)),] # isolate independent voters
 q3<- q3[which(q3$voted == c(1,2,3)),] # isolated those who voted in 2018
-# head(q3_v1)
 ```
 __Analysis.__
+Both sets of data capture two different values, [1,2] with 1 indicating influence/coordination and 2 indicating the opinion that there was not Russian involvement.  78 data points exist, so the criteria of the central limit theorem is supported.  With only one numberial value in question, a parametric test is appropriate.  The student's t-test provides a viable tool for conducting hypothesis testing.
+The test structure is as follows:
+  - $H_0$: Russian influence exists, $\mu_0 = 1$
+  - $H_A$: $\mu \neq 1$
+This will be conducted as a two-tail test.
+
 ```{r}
 t.test(q3$russia_1, alternative = c("two.sided"), mu = 1)
 ```
-The second question does not generate enough respondents to effectively conduct a test (df = 15).
 
 ```{r}
-# q3<- q3[which(q3$party == c(3)),] # isolate independent voters
-# q3<- q3[which(q3$voted == c(1,2,3)),] # isolated those who voted in 2018
-# head(q3_v2)
 t.test(q3$russia_2, alternative = c("two.sided"), mu = 1)
 ```
 
@@ -169,9 +187,9 @@ A particularly interesting feature amongst respondants is that their responses a
 
 ```{r}
 library(knitr)
-v1 <- c(1.423)
-v2 <- c(1.025)
-v3 <- c(1.848)
+v1 <- c(1.423, 1.487)
+v2 <- c(1.025, 1.058)
+v3 <- c(1.848, 1.962)
 headers <- c("Independent", "Democrat", "Republican")
 russia_outcome <- data.frame(v1,v2,v3)
 kable(russia_outcome, caption = "Russia Coordination Perception", col.names = headers)
