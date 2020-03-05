@@ -6,7 +6,7 @@ output:
 
 The mission of the American National Election Studies (ANES) is to advance the scientific study of public opinion and political behavior.  They accomplish this by developing and employing surveys that measure many variables and support rich hypothesis testing to assess voter turnout and vote choice.  The origins of their analysis started with a nation opinion survey conducted at the University of Michigan's Survey Research Center with the 1948 presidential election.  They continued to conduct surveys in every presidential election year through 2004.  In 2006, Stanford University's Institute for Research in the Social Sciences and the University of Michigan's Institute for Social Research developed a partnership which maintains and evolves the ANES.
 
-Through the decades, Time Series studies conducted before and after presidential elections represent the focus of ANES studies.  Typically collection occurs via face-to-face interviews with respondents in their homes.  Pilot Studies are used to test and refine new questions for the Time Series.  These supporting studiens are conducted telephonically.  The data assessed in this lab is from the 2018 Pilot Study.
+Through the decades, Time Series studies conducted before and after presidential elections represent the focus of ANES studies.  Typically collection occurs via face-to-face interviews with respondents in their homes.  Pilot Studies are used to test and refine new questions for the Time Series.  These supporting studies are conducted telephonically.  The data assessed in this lab is from the 2018 Pilot Study.
 
 
 ```{r}
@@ -14,35 +14,17 @@ setwd("~/Desktop/W203/homework/lab_2")
 anes_data <- read.csv("~/Desktop/W203/homework/lab_2/anes_pilot_2018.csv")
 ```
 
-```{r}
-# master state code list from ANES errata site
-state_code <- c(1,2,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,53,54,55,56)
-state_name <- c("AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
-state_list <- data.frame(state_code, state_name, stringsAsFactors = FALSE)
-# end master state code list
-
-states <- anes_data$inputstate  # isolate state info from dataset
-#length(states) # confirm length is 2500
-#length(unique(states)) # confirm all states represented
-#states[states %in% "-7"]<-"8"  # fix CO
-#states[states %in% "-1"] <-"9" # fix CT
-# state_count <- state_count[order(count(states)),]  # doesn't work right
-# state_count <- data.frame(count(states))
-#colnames(state_count) <- c("code", "count")
-#state_count
-```
-
 __1. Do US voters have more respect for the police or for journalists?__
 
 __Overview__
-Within the ANES pilot questions, two specific ones directly support the posed question:\
+Within the ANES pilot questions, two specific ones directly support the posed question:
 
   - How would you rate the police?\
   - How would you rate journalists?
   
 Though these questions do not provide a holistic assessment of public opinion, the do provide a start point for an initial perspective on sentiment trends.  This will provide a start point to compare the public opinions captured in the pilot study.
 
-The context of these questions was in 'feeling thermometers' which have a numberical range from 0 too 100.
+The context of these questions was in 'feeling thermometers' which have a numberical but categorical range from 0 too 100.
 
 __Initial Assessment__
 ```{r}
@@ -59,9 +41,11 @@ press_data <- press_data[-c(51),] # delete row with -7 value
 press_data <- press_data[-c(597),] # delete row with -7 value
 ```
 
-The expected range of the data for each of these survey questions is [0,100].  The police data meets this criteria; however, the press data does not.  This question possesses negative values.  The data set was modified to include only values from 0 to 100, which reduced the overall number by 2, to 2498.
+Values existed for all respondents for these two questions.  The expected range of the data for each of these survey questions is [0,100].  The police data meets this criteria; however, the press data does not.  This question possesses negative values, which indicates these was no respondent answer.  To prevent the results from being skewed by these values, the responses associated with those respondents were not included in the analysis.  Using this approach, the overall number of respondents reduced by 2.  The final data set analysed possessed data from 2498 respondents with values from 0 to 100 for both the press and police questions. 
 
-Though the data is numberical in nature, indivduals will use different scales when assessing their relative values on the thermometer.  Consequently, a linear relationship cannot be assumed to exist between the values.  This data feature supports the use of a non-parametric hypothesis test - namely the Wilcoxon Rank-Sum Test.  Employing the Hypothesis of Means for $H_O$ for this analysis capitalizes on the metric scale that the thermometer context provides.  
+Though the data is numberical in nature, indivduals will use different scales when assessing their relative values on the thermometer.  Consequently, a linear relationship cannot be assumed to exist between the values.  This data feature supports the use of a non-parametric hypothesis test - namely the Wilcoxon Rank-Sum Test.  Employing the Hypothesis of Means for $H_O$ for this analysis capitalizes on the metric scale that the thermometer context provides.  For this question, the hypotheses tested were:
+  - Null:  The means of the two groups is the same. $H_0:  E(Press) = E(Police)$
+  - Alternative:  The means of the two groups are not the same.  $H_A:  E(Press) \neq E(Police)$
 
 __Analysis__
 ```{r}
@@ -70,17 +54,41 @@ y <- press_data$press # press data
 # length(x); length(y)
 wilcox.test(x,y, paired = TRUE, mu = 0, conf.level = 0.95)
 ```
-Practical Significance.  Spearman's rank correlation coefficient represents an effective way to assess the practical significance of the police and press analysis.  It provides a non-parametric measure of rank correlation, which aligns to the hypothesis test.
+
+__Outcome.__ 
+  - Statistical Signficance. The p-value obtained from the Wilcoxon rank-sum test supports rejecting the null hypotheses - namely that there is no translation in the distributions of public opinion of the police and the press.
+  - Practical Significance.  Spearman's rank correlation coefficient represents an effective way to assess the practical significance of the police and press analysis.  It provides a non-parametric measure of rank correlation, which aligns to the hypothesis test.
 
 ```{r}
 cor(x,y, method = "spearman")
 ```
+- The values for Spearman's Rank-Order Correlation, $r_s$, can take on the values from $+1$ to $-1$.  $r_s$ has the following associations:\
+  - $+1$:  perfect association of ranks\
+  - $0$:   no association between the ranks\
+  - $-1$:  perfet negative association of ranks.
+
+The $r_s$ value obtained from this test was -0.123.  This indicates a weak negative correlation between the public opinion of the press and the police.
+
+\pagebreak
 
 __2.  Are Republican voters older or younger than Democratic voters?__
 
-Within the set of data collected on each participant was their age.  This variable, coupled with the question:  Generally speaking, do you usually think of yourself as a Democrat, a Republican,.....
+__Overview.__
+Two entries within the survey directly support establishing a frame for this question.  These two questions are:\
+- What year were you born?\
+- Generally speaking, do you usually think of yourself as a Democrat, a Republican, an Independent, or what?
 
-Together, along with the assmption that surveyed individuals provided truthful data for these questions, a basis exists to initially assess the relative ages of Republican and Democratic individuals.
+Together, these questions, along with the assmption that surveyed individuals provided truthful data for these questions, creates an informed approach to answering which party has older voters.  The age of the respondent is a numberical value, and their party affiliation is categorical.  
+
+__Initial Assessment.__
+This type of data supports using the independent sample t-test.  One set of data is numberical (respondents' ages), and the other is categorical (Republican or Democrat). With this test, we conducted a comparison of means.  The hypotheses being tested were:\
+ - $H_0: E(Republicans) = E(Democrats)$.\
+ - $H_A: E(Republicans) \neq E(Democrats)$
+ 
+ Assumptions needed for this analysis include:\
+  - Metric scale.  The age data meets this assumption.\
+  - Each value pair is drawn independent of other pairs from the same distribution.
+  - The two variables have the same distribution, just with some potential shift.
 ```{r}
 party <- anes_data$pid1d
 party_count <- length(party)
@@ -88,38 +96,88 @@ party_count <- length(party)
 year <- anes_data$birthyr
 summary(year)
 q2 <- data.frame(year, party)
-# q2 <- data.frame(year, party, 2018 - year)
-# names(q2)[3] <- "age"
+age <- 2018 - year
+q2 <- data.frame(year, party, age)
+# names(q2)[3] <- "age"  # replacing all values with 
 q2 <- q2[which (q2$party == c(1,2)),] # [1,2,3] = [Dem, Rep, Independent] = [432,326,356]
 # head(q2)
-t.test(year ~ party, data = q2)
 ```
+__Analysis.__
 
-Use an independent sample t-test.
+```{r}
+t.test(age ~ party, data = q2)
+```
+Statistical signifcance.  The high p-value from this test, 0.547 indicates that the null hypothesis cannot be rejected.  
+
+Practical significance.  The Cohen's d test supports determining the effect size for the analysis.  With this test, the outcome value (d = 0.0624) indicates that there is only a small effect present with this test.  
 
 ```{r}
 library(effsize)
 cohen.d(year ~ party, data = q2)
 ```
-Extension.....should the screening criteria be placed with the question that asked if they voted in the last election?  About 2000 respondants said they voted in some fashion.  Field:  turnout18.  values of interest:  1,2,3.
+
+Thus far, we have only addressed individuals who identified themselves as either Republicans or Democrats.  What has yet to be addressed is whether they voted.  One of the survey questions captures whether respondents voted in the election held the month prior (November 2018).  Integrating this criteria into the dataset gives some further insights into party voters.
+
+```{r}
+voted <- anes_data$turnout18
+q2_vote = data.frame(party, age, voted)
+q2_vote <- q2_vote[which (q2_vote$party == c(1,2)),]  # isolate for [1,2] = [D,R]
+q2_vote <- q2_vote[which (q2_vote$voted == c(1,2,3)),] # isolate for those that voted 2018
+# head(q2_vote)
+t.test(age ~ party, data = q2_vote)
+```
+
+__Outcome.__
+Including the constraint of having voted in the previous month's election conveys a distinctly different picture.  The p-value no longer supports not rejecting the null hypothesis.  The data does not support that the difference in means is zero.  A point of note is that for the Democrats, the average age between the two scenarios stayed quite constant (51.7 and 51.1).  However, for the Republicans, the average age of those that voted in the November election was 8 years older than Republicans at large from the survey.
+
+```{r}
+library(effsize)
+cohen.d(age ~ party, data = q2_vote)
+```
+Re-assessing the practical significance of the results on the adjusted dataset with the Cohen's d test now indicates a medium effect size.  These results indicate that the average age of Democrats at large in the survey and those that voted in the November 2018 election are consistent.  However, Republicans that voted in the November 2018 election are on average 8 years older than Republicans at large in the survey.
+
+\pagebreak
 
 __3. Do a majority of independent voters believe that the federal investigations of Russia election interference are baseless?__
 
+__Overview.__
+
+__Initial Assessment.__
 ```{r}
 
 q3 <- data.frame(anes_data$pid1d, anes_data$turnout18, anes_data$russia16, anes_data$coord16)
 colnames(q3) <- c("party", "voted", "russia_1", "russia_2")
-q3_v1 <- q3[which (q3$russia_1 == c(1)),]
-q3_v1 <- q3_v1[which(q3$party == c(3)),]
-# q3_v1 <- q3_v1[which(q3$voted == c(1,2,3)),]
+q3<- q3[which(q3$party == c(3)),] # isolate independent voters
+q3<- q3[which(q3$voted == c(1,2,3)),] # isolated those who voted in 2018
+# head(q3_v1)
 ```
+__Analysis.__
 ```{r}
-q3_v2 <- q3[which(q3$party == c(3), q3$russia_2 == c(1)),]
-head(q3_v2)
-# q3_v1 <- q3_v1[which(q3$voted == c(1,2,3)),]
+t.test(q3$russia_1, alternative = c("two.sided"), mu = 1)
+```
+The second question does not generate enough respondents to effectively conduct a test (df = 15).
+
+```{r}
+# q3<- q3[which(q3$party == c(3)),] # isolate independent voters
+# q3<- q3[which(q3$voted == c(1,2,3)),] # isolated those who voted in 2018
+# head(q3_v2)
+t.test(q3$russia_2, alternative = c("two.sided"), mu = 1)
 ```
 
+__Outcome.__
+A particularly interesting feature amongst respondants is that their responses almost completely align to party lines.  When re-doing the data for respondents that voted for each of the identified parties - Republican, Democrat, and Independent, each outcome is unique.
 
+```{r}
+library(knitr)
+v1 <- c(1.423)
+v2 <- c(1.025)
+v3 <- c(1.848)
+headers <- c("Independent", "Democrat", "Republican")
+russia_outcome <- data.frame(v1,v2,v3)
+kable(russia_outcome, caption = "Russia Coordination Perception", col.names = headers)
+```
+
+\pagebreak
 
 __4. Was anger or fear more effective at driving increases in voter turnout from 2016 to 2018?__
 
