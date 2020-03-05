@@ -178,3 +178,19 @@ t.test(2018 - meeters$birthyr, 2018 - survey$birthyr) #p = 0.5347
 activePolitics = survey[which(as.numeric(survey$follow) == 1),]
 ggplot(activePolitics, aes(x = 2018 - activePolitics$birthyr)) + geom_histogram(binwidth=5)
 t.test(2018 - activePolitics$birthyr, 2018 - survey$birthyr)
+
+semiActivePolitics = survey[which(as.numeric(survey$follow) == 2),]
+ggplot(semiActivePolitics, aes(x = 2018 - semiActivePolitics$birthyr)) + geom_histogram(binwidth=5)
+t.test(2018 - semiActivePolitics$birthyr, 2018 - survey$birthyr)
+
+inActivePolitics = survey[which(as.numeric(survey$follow) > 2),]
+ggplot(inActivePolitics, aes(x = 2018 - inActivePolitics$birthyr)) + geom_histogram(binwidth=5)
+t.test(2018 - inActivePolitics$birthyr, 2018 - survey$birthyr)
+
+validWealthRespondents = survey[which(as.numeric(survey$faminc_new) > 0 & as.numeric(survey$faminc_new) < 17),]
+hist(validWealthRespondents$faminc_new)
+
+followLabels = factor(levels = c(1,2,3,4), labels = c("Most of the time", "Some of the time", "Only now and then", "Hardly ever"))
+boxplot(validWealthRespondents$faminc_new ~ validWealthRespondents$follow, names=c("Most of the time", "Some of the time", "Only now and then", "Hardly ever"), ylab="Family Income", xlab="Following Politics", yaxt="n")
+axis(2, at=c(5, 10, 15),labels=c("$40k-$49k", "$100k-$119k", "$350k-$499k"), las=3)
+
