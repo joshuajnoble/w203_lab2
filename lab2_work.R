@@ -1,6 +1,7 @@
 
 library(tidyverse)
 library(dplyr)
+library(effsize)
 
 setwd("C:/Users/winbase/MIDS/w203/lab_2-master")
 list.files()
@@ -114,3 +115,66 @@ p
 #not sure if we can just run both?
 wilcox.test(voters$geangry, voters$geafraid,  alternative = "greater")
 wilcox.test(voters$geafraid, voters$geangry,  alternative = "greater")
+
+############################################################################################### 
+# work for question 5
+###############################################################################################
+
+#is there a correlation between age and donating to political campaigns?
+cohen.d(birthyr ~ give, survey) # d estimate: -0.4745838 (small)
+
+#is there a correlation between age and persuading others?
+cov(survey$persuade, 2018 - survey$birthyr)
+cor(survey$persuade, 2018 - survey$birthyr, method = "pearson") # -0.09644592
+cohen.d(birthyr ~ persuade, survey) # d estimate: -0.2003081 (small)
+
+#is there a correlation between age and talking online?
+cov(survey$online, 2018 - survey$birthyr)
+cor(survey$online, 2018 - survey$birthyr, method = "pearson") # -0.1720164
+cohen.d(birthyr ~ online, survey) # d estimate: -0.2003081 (small)
+
+#is there a correlation between age and donating to political orgs?
+cov(survey$givefut, 2018 - survey$birthyr)
+cor(survey$givefut, 2018 - survey$birthyr, method = "pearson") # -0.1660366
+cohen.d(birthyr ~ givefut, survey) # d estimate: -0.3502668 (small)
+
+#is there a correlation between age and meeting to talk
+cov(survey$meet, 2018 - survey$birthyr)
+cor(survey$meet, 2018 - survey$birthyr, method = "pearson") # -0.01604404
+cohen.d(birthyr ~ meet, survey) # d estimate: -0.03799891 (negligible)
+
+# lets see donations and age
+givers = survey[which(as.numeric(survey$give) < 2),]
+ggplot(givers, aes(x = 2018 - givers$birthyr)) + geom_histogram(binwidth=5)
+
+donaters = survey[which(as.numeric(survey$givefut) < 2),]
+ggplot(donaters, aes(x = 2018 - donaters$birthyr)) + geom_histogram(binwidth=5)
+
+persuaders = survey[which(as.numeric(survey$persuade) < 2),]
+ggplot(persuaders, aes(x = 2018 - persuaders$birthyr)) + geom_histogram(binwidth=5)
+
+onliners = survey[which(as.numeric(survey$online) < 2),]
+ggplot(onliners, aes(x = 2018 - onliners$birthyr)) + geom_histogram(binwidth=5)
+
+meeters = survey[which(as.numeric(survey$meet) < 2),]
+ggplot(meeters, aes(x = 2018 - meeters$birthyr)) + geom_histogram(binwidth=5)
+
+q5DataFrame = rbind(data.frame(pred = 2018 - givers$birthyr, var = 'give'), 
+                    data.frame(pred = 2018 - meeters$birthyr, var = 'meet'),
+                    data.frame(pred = 2018 - persuaders$birthyr, var = 'persuade'),
+                    data.frame(pred = 2018 - onliners$birthyr, var = 'online'),
+                    data.frame(pred = 2018 - donaters$birthyr, var = 'donate'))
+
+#this doesn't show us how many people we have in each bin though, so it needs tweaking
+ggplot(q5DataFrame,aes(x=pred, fill=var)) + geom_histogram(alpha = 0.5, position = "dodge", bins = 5)
+
+
+t.test(2018 - givers$birthyr, 2018 - survey$birthyr) #  p-value = 7.931e-15
+t.test(2018 - donaters$birthyr, 2018 - survey$birthyr) # p-value = 2.903e-10
+t.test(2018 - persuaders$birthyr, 2018 - survey$birthyr) # p-value = 0.001138
+t.test(2018 - onliners$birthyr, 2018 - survey$birthyr) #p =  p-value = 1.182e-07
+t.test(2018 - meeters$birthyr, 2018 - survey$birthyr) #p = 0.5347
+
+activePolitics = survey[which(as.numeric(survey$follow) == 1),]
+ggplot(activePolitics, aes(x = 2018 - activePolitics$birthyr)) + geom_histogram(binwidth=5)
+t.test(2018 - activePolitics$birthyr, 2018 - survey$birthyr)
