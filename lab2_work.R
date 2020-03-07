@@ -227,12 +227,10 @@ inActivePolitics = anes_data[which(as.numeric(anes_data$follow) > 2),]
 ggplot(inActivePolitics, aes(x = 2018 - inActivePolitics$birthyr)) + geom_histogram(binwidth=5)
 t.test(2018 - inActivePolitics$birthyr, 2018 - anes_data$birthyr)
 
-validWealthRespondents = anes_data[which(as.numeric(anes_data$faminc_new) > 0 & as.numeric(anes_data$faminc_new) < 17),]
+validWealthRespondents = anes_data[which(as.numeric(anes_data$faminc_new) > 0 & as.numeric(anes_data$faminc_new) < 20),]
 hist(validWealthRespondents$faminc_new)
 
 #classic r plot
-
-followLabels = factor(levels = c(1,2,3,4), labels = c("Most of the time", "Some of the time", "Only now and then", "Hardly ever"))
 boxplot(validWealthRespondents$faminc_new ~ validWealthRespondents$follow, names=c("Most of the time", "Some of the time", "Only now and then", "Hardly ever"), ylab="Family Income", xlab="Following Politics", yaxt="n")
 axis(2, at=c(5, 10, 15),labels=c("$40k-$49k", "$100k-$119k", "$350k-$499k"), las=3)
 
@@ -242,17 +240,18 @@ library(wesanderson)
 palette = wes_palette("Zissou1", 4, type = "discrete")
 
 q5frame = data.frame(validWealthRespondents)
-followLabels = factor(levels = c(1,2,3,4), labels = c("Most of the time", "Some of the time", "Only now and then", "Hardly ever"))
 ggplot(q5frame, aes(x=factor(q5frame$follow), y=q5frame$faminc_new, fill=factor(q5frame$follow))) + 
   geom_boxplot() + 
-  scale_fill_manual(values = wes_palette("Zissou1", n = 4)) + 
-  xlab("How closely do you follow politics") + 
+  scale_fill_manual(values = wes_palette("Zissou1", n = 4), name="Following politics", labels = c("Most of the time", "Some of the time", "Only now and then", "Hardly ever")) + 
+  xlab("How closely do you follow politics?") + 
   scale_x_discrete(labels = c("Most of the time", "Some of the time", "Only now and then", "Hardly ever")) + 
   scale_y_continuous(name="Household Income", labels=c("$40k-$49k", "$100k-$119k", "$350k-$499k"), breaks=c(5, 10, 15))
 
 
 activeWithWealth = validWealthRespondents[which(as.numeric(validWealthRespondents$follow) == 1),]
-wilcox.test(activeWithWealth$faminc_new, validWealthRespondents$faminc_new)
-
 inActiveWithWealth = validWealthRespondents[which(as.numeric(validWealthRespondents$follow) == 4),]
+
+wilcox.test(activeWithWealth$faminc_new, validWealthRespondents$faminc_new)
 wilcox.test(inActiveWithWealth$faminc_new, validWealthRespondents$faminc_new)
+
+cor(validWealthRespondents$faminc_new, 4 - validWealthRespondents$follow, method = "spearman")

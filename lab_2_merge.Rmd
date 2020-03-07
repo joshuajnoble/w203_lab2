@@ -117,6 +117,8 @@ cohen.d(age ~ party, data = partisanAge)
 
 Thus far, we have only addressed individuals who identified themselves as either Republicans or Democrats.  What has yet to be addressed is whether they voted.  One of the survey questions captures whether respondents voted in the election held the month prior (November 2018).  Integrating this criteria into the dataset gives some further insights into party voters.
 
+![Voted Age Distribution](q2_voters_age.png)
+
 ```{r}
 partisansVoted = partisans[which(partisans$turnout18 == c(1,2,3)),]
 t.test(2018 - partisansVoted$birthyr ~ partisansVoted$pid1d, data = partisansVoted)
@@ -176,7 +178,12 @@ kable(russia_outcome, caption = "Russia Coordination Perception", col.names = he
 
 __4. Was anger or fear more effective at driving increases in voter turnout from 2016 to 2018?__
 
-The question asks us to understand reasons for an increase in voter turnout. First we should check our data for consistency:
+
+The question asks us to understand reasons for an increase in voter turnout. 
+
+__Initial Assessment.__
+
+First we should check our data for consistency:
 
 ```{r}
 
@@ -195,6 +202,8 @@ nrow(voters18) - nrow(voters16)
 
 We can see an increase of 1 vote from 2018 to 2016 so it appears that the principle assumption of this question, that there was an increase in votes 2018 vs 2016, is incorrect. We can however see whether voters from both of these elections feel more angry or afriad by using the question "Generally speaking, how do you feel about the way things are going in the country these days?" There are two Likert scale responses that seem to give an indication of fear vs anger: "How angry do you feel?" and "How afraid do you feel?".
 
+__Analysis.__
+
 ```{r}
 #get all of our voters who answered both the angry and afraid questions
 geVoters18 = voters18[which(as.numeric(voters18$geangry) > 0 & as.numeric(voters18$geafraid) > 0),] 
@@ -209,6 +218,8 @@ We can see that there seems to be more 'very' and 'extreme' responses for anger 
 
 ![Anger vs Fear](q4_graph.png)
 
+__Outcome.__
+
 We could test our hypotheses that the responses are different for the two questions:
 
  - $H_0: E(Fear) = E(Anger)$.\
@@ -222,14 +233,107 @@ wilcox.test(geVoters18$geangry, geVoters18$geafraid,  alternative = "two.sided")
 
 Going further, we can now test whether anger is indeed more significant than fear, or
 
- - $H_0: E(Fear) > E(Anger)$.\
+ - $H_0: E(Fear) \geq E(Anger)$.\
  - $H_A: E(Fear) < E(Anger)$
  
  ```{r}
 wilcox.test(geVoters18$geangry, geVoters18$geafraid, null="less", alternative = "greater")
 ```
-This gives us a p-value = 2.293e-12 so we can reject our null hypothesis that 2018 election voters feel more fear than anger. 
+This gives us a p-value = 2.293e-12 so we should reject our null hypothesis that 2018 election voters feel more fear than anger about the state of affairs in the country.
 
 __5. Does household income affect how much attention reponsdents pay to politics and public affairs?
 
+For our self-selected question we chose to focus on whether household income affects how how closely respondents followed politics.
 
+__Initial Assessment.__
+
+Respondents were asked for household income using the question "Thinking back over the last year, what was your family’s annual income?”, this is encoded as `faminc_new`
+
+ ```{r}
+ summary(anes_data$faminc_new)
+hist(anes_data$faminc_new)
+```
+
+"Decline to answer" is encoded as a 97, so we'll want to remove those rows in order to use `faminc_new`.
+
+```{r}
+validWealthRespondents = anes_data[which(as.numeric(anes_data$faminc_new) > 0 & as.numeric(anes_data$faminc_new) < 20),]
+```
+
+The scale is not perfectly metric, a '3' corresponds to a family income between \$20,000 and \$29,000 but an 11 indicates a family income between \$120,000 - \$149,999.
+
+Respondents were also asked how closely they followed politics on the following scale: 
+
+Most of the time [1]
+Some of the time [2]
+Only now and then [3]
+Hardly at all [4]
+
+We can compare the means of our wealth respondents and our entire survey to see whether the two groups differ dramatically:
+
+ ```{r}
+t.test(anes_data$follow, validWealthRespondents$follow)
+```
+
+This shows a p-value = 0.6272, so we cannot reject the null hypothesis that these two groups show no difference in means.
+
+__Analysis__
+
+We can now begin to look at whether there is a difference in the household income levels for those who answered that the follow politics most of the time and those that answered that they hardly ever do. We get an intuition for this by graphing it:
+
+```{r}
+q5frame = data.frame(validWealthRespondents)
+ggplot(q5frame, aes(x=factor(q5frame$follow), y=q5frame$faminc_new, fill=factor(q5frame$follow))) + 
+  geom_boxplot() + 
+  scale_fill_manual(values = wes_palette("Zissou1", n = 4), name="Following politics", labels = c("Most of the time", "Some of the time", "Only now and then", "Hardly ever")) + 
+  xlab("How closely do you follow politics?") + 
+  scale_x_discrete(labels = c("Most of the time", "Some of the time", "Only now and then", "Hardly ever")) + 
+  scale_y_continuous(name="Household Income", labels=c("$40k-$49k", "$100k-$119k", "$350k-$499k"), breaks=c(5, 10, 15))
+```
+
+![Icnome and Political Interest](q5_plot.png)
+
+The median family income for those who report following politics "closely "most of the time" does appear to be higher than those that report following it "hardly ever".
+
+Since neither the family income nor the following politics responses are metric we should examine a possible relationship between these two variables using the Wilcoxon test. We'll isolate respodents who claimed to follow politics "most of the time" and those who claimed they followed politics "hardly ever" and see whether the two are different from our whole sample set.
+
+```{r}
+activeWithWealth = validWealthRespondents[which(as.numeric(validWealthRespondents$follow) == 1),]
+inActiveWithWealth = validWealthRespondents[which(as.numeric(validWealthRespondents$follow) == 4),]
+```
+
+First we can look at whether the wealth levels for our "most of the time" respondents differ from all of our wealth respondents:
+
+ - $H_0: E(Followers) = E(All)$.\
+ - $H_A: E(Followers) \neq E(All)$
+
+```{r}
+wilcox.test(activeWithWealth$faminc_new, validWealthRespondents$faminc_new, conf.int=TRUE )
+```
+
+With a p-value = 8.303e-16 this appears to be statistically significant. 
+
+Next we can look at whether the wealth levels for our "most of the time" respondents differ from all of our wealth respondents:
+
+ - $H_0: E(Nonfollowers) = E(All)$.\
+ - $H_A: E(Nonfollowers) \neq E(All)$
+
+```{r}
+wilcox.test(inActiveWithWealth$faminc_new, validWealthRespondents$faminc_new, conf.int=TRUE )
+```
+
+This also appears statistically significant, with a p-value < 2.2e-16.
+
+Since the means of both groups differ significantly from the means of the larger population that answered the question we can explore whether there is a correlation between the family income and the self-reported following of politics:
+
+```{r}
+# 5 - validWealthRespondents$follow to invert the scale so that less interest is a 1 and more interest is a 4
+cor(validWealthRespondents$faminc_new, 5 - validWealthRespondents$follow, method = "spearman")
+```
+
+This gives us a correlation of 0.35. The values for Spearman's Rank-Order Correlation, $r_s$, can take on the values from $+1$ to $-1$.  $r_s$ has the following associations:\
+  - $+1$:  perfect association of ranks\
+  - $0$:   no association between the ranks\
+  - $-1$:  perfet negative association of ranks.
+
+The $r_s$ value obtained from this test was 0.35 which is a weak monotonically increasing relationship.  Because of the sample size and p-value obtained, we believe that this indicates a correlation between family income of the respondents and the closeness with which they follow politics.
