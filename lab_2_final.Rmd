@@ -161,24 +161,26 @@ Re-assessing the practical significance of the results on the adjusted dataset w
 __3. Do a majority of independent voters believe that the federal investigations of Russia election interference are baseless?__
 
 __Overview.__\
-Prior to the 2016 presidential election, members of the US Congress publically disclosed the existence of attempted Russian interference activities. Robert Mueller, a former FBI director, led a Special Counsel Investigation from May 2017 to March 2019. This survey occurred while this Mueller's investigation was ongoing.
+Prior to the 2016 presidential election, members of the US Congress publically disclosed the existence of attempted Russian interference activities. Robert Mueller, a former FBI director, led a Special Counsel Investigation from May 2017 to March 2019. the intent of this Special Counsel investigation was an investigation of Russian interference in the 2016 US elections and of suspicious links between President Trump and Russian officials.  This survey occurred while Mueller's investigation was ongoing.
 
 __Operationalization.__\
-Within the survey a specific section was dedicated to the Russia/Trump campaign investigation.  One question specifically addressed the Mueller Investigation, while the other two explicitly addressed public opinion regarding the Russian interference in the campaign.\
+Within the survey a specific section was dedicated to the Russia/Trump campaign investigation.  Three questions exist on this topic, which are:\
 
 - Do you think the Russian government probably interfered in the 2016 presidential election to try and help Donald Trump win, or do you think this probably did not happen?\
 - Do you think Donald Trump's 2016 campaign probably coordinated with the Russians, or do you think his campaign probably did not do this?\
+- Do you approve, disapprove, or neither approve nor disapprove of Robert Mueller's investigation of Russian interference in the 2016 election?\
 
-Both questions have potential to provide some insight into the question at hand, assuming that respondents provided honest answers.  The survey question is close to the question at hand.  Assessing the available data will help frame which ones best inform the analysis.
+The first two questions generate a binomial response.  The final questions has a Likert approach to assess the respondent's opinion.  No one question directly answers the question posed.  Focusing on the baseless aspect, the first two questions with a binomial response option represent the best approach to evaluate for the baseless criteria of the question.  
 
 __Explorataory Data Analysis.__\
 
+
 ```{r}
 
-russia_involvement <- data.frame(anes_data$pid1d, anes_data$turnout18, anes_data$russia16, anes_data$coord16)
+russia_involvement <- data.frame(anes_data$pid1d, anes_data$turnout18, anes_data$russia16, anes_data$coord16, anes_data$muellerinv)
 colnames(russia_involvement) <- c("party", "voted", "russia_1", "russia_2")
-russia_involvement<- russia_involvement[which(russia_involvement$party == c(3)),] # isolate independent voters
-russia_involvement<- russia_involvement[which(russia_involvement$voted == c(1,2,3)),] # isolated those who voted in 2018
+russia_involvement<- russia_involvement[which(russia_involvement$party == c(3)),] # isolate independent voters - 356
+# russia_involvement<- russia_involvement[which(russia_involvement$voted == c(1,2,3)),] # isolated those who voted in 2018
 ```
 
 ```{r}
@@ -187,44 +189,58 @@ summary(russia_involvement$russia_2)
 
 ```
 
-
-__Analysis.__\
-Both sets of data capture two different values, [1,2] with 1 indicating influence/coordination and 2 indicating the opinion that there was not Russian involvement.  78 data points exist, so the criteria of the central limit theorem is supported.  With only one numberial value in question, a parametric test is appropriate.  The student's t-test provides a viable tool for conducting hypothesis testing.
-The test structure is as follows:
-  - $H_0$: Russian influence exists, $\mu_0 = 1$
-  - $H_A$: $\mu \neq 1$
-This will be conducted as a two-tail test.
+A particularly interesting feature of the data is that the responses almost completely align to party lines.  Data for respondents that voted for each of the identified parties - Republican, Democrat, and Independent, is depicted in the table below.
 
 ```{r}
-t.test(russia_involvement$russia_1, alternative = c("two.sided"), mu = 1)
+library(knitr)
+Independent_Russia <- c(1.463, 1.517)
+Democrats_Russia <- c(1.056, 1.067)
+Republicans_Russia <- c(1.812, 1.892)
+headers <- c("Independent", "Democrat", "Republican")
+russia_outcome <- data.frame(Independent_Russia,Democrats_Russia,Republicans_Russia)
+kable(russia_outcome,caption = "Russia Coordination Perception", col.names = headers)
+```
+
+The survey respondents consistently aligned to their party affiliation - Democrats aligned to the presence of influence, while Republicans were skewed towards the opinion of no involvment.  Independent affiliated respondents roughly split the diffence between the two extremes.  This reflects that individual responses are directly aligned to their party affiliation.  
+
+Given the binomial nature of the response data (interference/no interference), and the intent to identify a majority, a binomial test represents an effective approach to answer the question utilizing the survey data.  A binomial test compares the number of successes observed in a given number of trials with a hypothesised probability of success $p$.  
+$$H_O:  p = 0.5$$
+$$H_A:  p \neq 0.5$$
+With this alternative hypothesis, a two-tail test is done, as it is unknown if the surveyed independent voters are skewed towards either the Republican or Democrat party position.
+
+Assumptions for the binomial test include:
+- Items are dichotomous and nominal.  
+- The sample size is significantly less than the population size.
+- The sample is a fair representation of the population.
+- Sample items are independent.
+
+By assuming that the surveyed independent voters are a fair representation of their party affiliation, all the assumptions are met for the binomial test.
+
+__Analysis.__\
+
+```{r}
+russia16_len <- length(russia_involvement$russia_1)
+russia16_true <- sum(as.numeric(russia_involvement$russia_1) == 1)
+binom.test(russia16_true, russia16_len, p = 0.50, alternative = "two.sided", conf.level = 0.95)
 ```
 
 ```{r}
-t.test(russia_involvement$russia_2, alternative = c("two.sided"), mu = 1)
+coord16_len <- length(russia_involvement$russia_2)
+coord16_true <- sum(as.numeric(russia_involvement$russia_2) == 1)
+binom.test(coord16_true, coord16_len, p = 0.5, alternative = "two.sided", conf.level = 0.95)
 ```
 
 ```{r}
 cohen.d(russia_1 ~ russia_2, data = russia_involvement)
 ```
 
-__Outcome.__\
+__Outcome.__
 
-__Statistical Significance.__  The p-values for these tests, p = 8.74e-13 and 8.708e-11 both support rejecting the null hypothesis.
-__Practical Significance.__  The Cohen's d effect size value, d = -3.633, indicates that there is a large effect present between the two survey questions.
+__Statistical Significance.__  The large p-values, p = 0.1851 and  p = 0.56 for each of the binomial survey questions support not rejecting the null hypothesis.\
+__Practical Significance.__  The Cohen's d effect size value, d = -2.358, indicates that there is a large effect present between the two survey questions.
 
-A particularly interesting feature amongst respondants is that their responses almost completely align to party lines.  When re-doing the data for respondents that voted for each of the identified parties - Republican, Democrat, and Independent, each outcome is unique.
+As for whether a majority of independent voters believe that the federal investigations of Russia election interference are baseless, these two survey questions do not provide a conclusive answer to the question.
 
-```{r}
-library(knitr)
-Independent_Russia <- c(1.423, 1.487)
-Democrats_Russia <- c(1.025, 1.058)
-Republicans_Russia <- c(1.848, 1.962)
-headers <- c("Independent", "Democrat", "Republican")
-russia_outcome <- data.frame(Independent_Russia,Democrats_Russia,Republicans_Russia)
-kable(russia_outcome,caption = "Russia Coordination Perception", col.names = headers)
-```
-
-Survey respondents consistently aligned to their party affiliation - Democrats aligned to the presence of influence, while Republicans were skewed towards the opinion of no involvment.  Independent affiliated respondents roughly split the diffence between the two extremes.
 \pagebreak
 
 
@@ -287,7 +303,8 @@ __Outcome.__
 
 We could test our hypotheses that the responses are different for the two questions:
 \begin{center}
- - $H_0: E(Fear) = E(Anger)$.\
+ - $H_0: E(Fear) = E(Anger)$\
+ 
  - $H_A: E(Fear) \neq E(Anger)$
 \end{center}
 
@@ -354,7 +371,7 @@ __Analysis.__\
 We can compare the means of our wealth respondents and our entire survey to see whether the two groups differ dramatically:
 
 ```{r}
-t.test(anes_data$follow, validWealthRespondents$follow)
+#   t.test(anes_data$follow, validWealthRespondents$follow)
 ```
 
 This shows a p-value = 0.6272, so we cannot reject the null hypothesis that these two groups show no difference in means.
@@ -385,6 +402,7 @@ inActiveWithWealth = validWealthRespondents[which(as.numeric(validWealthResponde
 First we can look at whether the wealth levels for our "most of the time" respondents differ from all of our wealth respondents:
 \begin{center}
  - $H_0: E(Followers) = E(All)$.\
+ 
  - $H_A: E(Followers) \neq E(All)$
  \end{center}
 
