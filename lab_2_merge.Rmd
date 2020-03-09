@@ -1,7 +1,12 @@
 ---
-title: "W203 - Lab 2"
-output:
-  pdf_document: default
+title: "__W203: Statistics for Data Science__"
+subtitle: "__Lab 2: Comparing Means__"
+author: 
+ -  Joshua Noble
+ -  Praveen Joseph
+ -  Jill Cheney
+abstract: Hypothesis testing of parametric and non-parametric data sets represent key tasks evaluated within this lab.  Frequentist statistics techniques are used to answer a series of questions derived from the ANES 2018 Pilot Study.  Key aspects evaluated include the identification of relevant assumptions, development of null & alternative hypotheses and the assessment of statistical & practical significance.
+output:  pdf_document
 ---
 
 The mission of the American National Election Studies (ANES) is to advance the scientific study of public opinion and political behavior.  They accomplish this by developing and employing surveys that measure many variables and support rich hypothesis testing to assess voter turnout and vote choice.  The origins of their analysis started with a nation opinion survey conducted at the University of Michigan's Survey Research Center with the 1948 presidential election.  They continued to conduct surveys in every presidential election year through 2004.  In 2006, Stanford University's Institute for Research in the Social Sciences and the University of Michigan's Institute for Social Research developed a partnership which maintains and evolves the ANES.
@@ -12,6 +17,7 @@ Through the decades, Time Series studies conducted before and after presidential
 ```{r}
 setwd("~/Desktop/W203/homework/lab_2")
 anes_data <- read.csv("~/Desktop/W203/homework/lab_2/anes_pilot_2018.csv")
+library(ggplot2) 
 ```
 
 __1. Do US voters have more respect for the police or for journalists?__
@@ -249,8 +255,8 @@ __Initial Assessment.__
 
 Respondents were asked for household income using the question "Thinking back over the last year, what was your family’s annual income?”, this is encoded as `faminc_new`
 
- ```{r}
- summary(anes_data$faminc_new)
+```{r}
+summary(anes_data$faminc_new)
 hist(anes_data$faminc_new)
 ```
 
@@ -271,7 +277,7 @@ Hardly at all [4]
 
 We can compare the means of our wealth respondents and our entire survey to see whether the two groups differ dramatically:
 
- ```{r}
+```{r}
 t.test(anes_data$follow, validWealthRespondents$follow)
 ```
 
