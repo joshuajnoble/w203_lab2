@@ -349,6 +349,8 @@ Some of the time [2]
 Only now and then [3]
 Hardly at all [4]
 
+This variable is a Likert scale, so we'll need to ensure that we treat them both as non-metric.
+
 __Analysis.__\
 
 We can compare the means of our wealth respondents and our entire survey to see whether the two groups differ dramatically:

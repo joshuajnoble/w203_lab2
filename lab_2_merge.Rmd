@@ -234,7 +234,7 @@ We could test our hypotheses that the responses are different for the two questi
 Testing against a null hypothesis that there is no difference between the anger responses and the fear responses shows that there is a significant difference between the two:
 
 ```{r}
-wilcox.test(geVoters18$geangry, geVoters18$geafraid,  alternative = "two.sided")
+wilcox.test(geVoters18$geangry, geVoters18$geafraid,  alternative = "two.sided", paired=TRUE)
 ```
 
 Going further, we can now test whether anger is indeed more significant than fear, or
