@@ -256,9 +256,9 @@ Voter turnout varies greatly by state.  Many factors influence this to include:\
 Amidst all these factors, this question singles out one specifically.  It seeks to understand the impact that anger and fear had on voter turnout.  
 
 __Operationalization.__\
-No set of questions directly answers this question. this question was approached in two parts:  identify voters in 2016 and 2018, and then identify what makes them fearful or angry.  To identify voters, the questions addressing voter turnout in 2016 and 2018 provide the best initial insight on voting respondents.  
+No set of survey questions directly answers this question. To approach it, two distinct parts were considered:  identify voter and then identify what makes them fearful or angry.  To identify voters, the questions addressing voter turnout in 2016 and 2018 provide the best initial insight on voting respondents.  
 
-First we should check our data for consistency:
+Below are initial data checks for consistency:
 
 ```{r}
 
@@ -266,7 +266,7 @@ summary(anes_data$turnout16)
 summary(anes_data$turnout18)
 ```
 
-There are no non-responses, only respondents who are not sure if they voted, as per the codebook. We can filter these to find respondents who are sure they voted in 2016 and in 2018.  We can see an increase of 1 vote from 2018 to 2016, so it appears that the principle assumption of this question, that there was an increase in votes 2018 vs 2016, is incorrect. 
+There are no non-responses, only respondents who are not sure if they voted, as per the codebook. Three response options exist for the 2016 election:  voted (1), didn't vote (2), and not sure (3).  The 2018 question expanded the options to five in order to capture the method the voting method of respondents:  in person on 6 Nov (1), in person before 6 Nov (2), by mail (3), didn't vote (4) and not sure (5). Filtering the results for confirmed voters in 2016 and 2018, an net increase of 1 exists between 2016 and 2018.  This outcome challenges the assumption in the posed question:  namely the premise that voter turnout increased from 2016 to 2018.
 
 ```{r}
 #get all of our voters from 2016 who are sure they voted
@@ -277,7 +277,30 @@ voters18 = anes_data[which(anes_data$turnout18 < 4),]
 nrow(voters18) - nrow(voters16)
 ```
 
-A variety of survey questions address fear and anger in respondents.  Responses from the global emotion portion of the survey were examined to initially evaluate fear and anger in voters.  The overall question posed was:  "Generally speaking, how do you feel about the way things are going in the country these days?" 10 different emotions were surveyed on a Likert scale.  Responses to two of these provide an indicator for fear and anger, though there is no way to attribute it directly to voter turnout: 
+```{r}
+# this is an alternate approach to the question using the signed rank test and paired values for respondent answers to angry and afraid....I apologize for the coding up front.....
+q4 <- data.frame(anes_data$geangry, anes_data$geafraid, anes_data$turnout16, anes_data$turnout18)
+lengths(q4)
+new_q4 <- q4[which (q4$anes_data.turnout16==1),]
+
+# & q4$anes_data.turnout18==c(1,2,3),]
+lengths(new_q4)
+voters_q4 <- new_q4[which (new_q4$anes_data.turnout18==c(1,2,3)),]
+lengths(voters_q4)
+summary(voters_q4)
+
+```
+```{r}
+wilcox.test(voters_q4$anes_data.geangry, voters_q4$anes_data.geafraid, alternative = "two.sided", mu = 0, paired = TRUE, conf.level = 0.95)
+
+angry <- voters_q4$anes_data.geangry
+afraid <- voters_q4$anes_data.geafraid
+compare_q4 <- data.frame(angry,afraid)
+cor(angry, afraid, method = "spearman")
+```
+
+
+A variety of survey questions address fear and anger in respondents.  Responses from the global emotion portion of the survey were examined to initially evaluate fear and anger in voters.  The overall question posed was:  "Generally speaking, how do you feel about the way things are going in the country these days?" 10 different emotions were surveyed on a Likert scale.  Responses to two of these provide one indicator for fear and anger, though there is no way to attribute it directly to voter turnout: 
 \begin{center}
 - "How angry do you feel?"\
 
