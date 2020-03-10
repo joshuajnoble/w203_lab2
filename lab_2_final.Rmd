@@ -299,6 +299,11 @@ compare_q4 <- data.frame(angry,afraid)
 cor(angry, afraid, method = "spearman")
 ```
 
+```{r}
+library(BSDA)
+SIGN.test(angry, afraid, md = 0, alternative = "two.sided", conf.level = 0.95)
+```
+
 
 A variety of survey questions address fear and anger in respondents.  Responses from the global emotion portion of the survey were examined to initially evaluate fear and anger in voters.  The overall question posed was:  "Generally speaking, how do you feel about the way things are going in the country these days?" 10 different emotions were surveyed on a Likert scale.  Responses to two of these provide one indicator for fear and anger, though there is no way to attribute it directly to voter turnout: 
 \begin{center}
