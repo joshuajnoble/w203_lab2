@@ -189,6 +189,14 @@ summary(russia_involvement$russia_2)
 
 ```
 
+```{r}
+library("RColorBrewer")
+partyIdentified = data.frame(anes_data[which(anes_data$pid1d > 0 & anes_data$russia16 > 0 & anes_data$coord16 > 0),])
+russiaByParty = data.frame( party = partyIdentified$pid1d, russia = partyIdentified$russia16, coord = partyIdentified$coord16, mueller = partyIdentified$muellerinv )
+
+ggplot(russiaByParty, aes(x = russia, fill=factor(party), width=0.5)) + geom_bar()  + scale_fill_manual(values = c("#377EB8", "#E41A1C", "#4DAF4A", "#FD8D3C"),  breaks=c(1, 2, 3, 4), labels=c("Democrat", "Republican", "Independent", "Other")) + scale_x_continuous(breaks=c(1,2), labels = c("Russia probably interfered", "This did not happen")) + xlab("") + ylab("") + labs(fill="Party Affiliation", title = "Do you think the Russian government interfered in the 2016 election?")
+```
+
 A particularly interesting feature of the data is that the responses almost completely align to party lines.  Data for respondents that voted for each of the identified parties - Republican, Democrat, and Independent, is depicted in the table below.
 
 ```{r}
@@ -197,7 +205,7 @@ Independent_Russia <- c(1.463, 1.517)
 Democrats_Russia <- c(1.056, 1.067)
 Republicans_Russia <- c(1.812, 1.892)
 headers <- c("Independent", "Democrat", "Republican")
-russia_outcome <- data.frame(Independent_Russia,Democrats_Russia,Republicans_Russia)
+russia_outcome <- data.frame(Independent_Russia, Democrats_Russia, Republicans_Russia)
 kable(russia_outcome,caption = "Russia Coordination Perception", col.names = headers)
 ```
 
@@ -277,7 +285,7 @@ voters18 = anes_data[which(anes_data$turnout18 < 4),]
 nrow(voters18) - nrow(voters16)
 ```
 
-A variety of survey questions address fear and anger in respondents.  Responses from the global emotion portion of the survey were examined to initially evaluate fear and anger in voters.  The overall question posed was:  "Generally speaking, how do you feel about the way things are going in the country these days?" 10 different emotions were surveyed on a Likert scale.  Responses to two of these provide an indicator for fear and anger, though there is no way to attribute it directly to voter turnout: 
+A variety of survey questions address fear and anger in respondents, a global question about the direction of the country as a whole, and specific questions about what emotions the respondents felt about Donald Trump. Responses from the global emotion portion of the survey were examined to initially evaluate fear and anger in voters.  The overall question posed was:  "Generally speaking, how do you feel about the way things are going in the country these days?" 10 different emotions were surveyed on a Likert scale.  Responses to two of these provide an indicator for fear and anger, though there is no way to attribute it directly to voter turnout: 
 \begin{center}
 - "How angry do you feel?"\
 
@@ -297,7 +305,9 @@ ggplot(question4frame, aes(x = question4frame$response, fill=emotion), stat="cou
 
 ```
 
-We can see that there seems to be more 'very' and 'extreme' responses for anger than for fear:
+We can see that there seems to be more 'very' and 'extreme' responses for anger than for fear and more "Not at all" and "A little" responses for afraid:
+
+![Anger vs Fear](angry_afraid_mapping.png)
 
 __Outcome.__
 
@@ -332,6 +342,8 @@ wilcox.test(geVoters18$geangry, geVoters18$geafraid, null="less", alternative = 
 __Statistical significance.__ This gives us a p-value = 2.293e-12 so we should reject our null hypothesis that 2018 election voters feel more fear than anger about the state of affairs in the country.
 
 __Practical significance.__ 
+
+The question asks about an increase in voters. From our survey we can't be sure that there is an increase in voters. Moreover we also cannot make claims about what is motivating those voters to vote. We can however see that in general they report feeling anger than fear about the state of the country.
 
 \pagebreak
 
