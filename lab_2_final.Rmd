@@ -198,10 +198,13 @@ russiaByParty = data.frame( party = partyIdentified$pid1d, russia = partyIdentif
 ggplot(russiaByParty, aes(x = russia, fill=factor(party), width=0.5)) + geom_bar()  + scale_fill_manual(values = c("#377EB8", "#E41A1C", "#4DAF4A", "#FD8D3C"),  breaks=c(1, 2, 3, 4), labels=c("Democrat", "Republican", "Independent", "Other")) + scale_x_continuous(breaks=c(1,2), labels = c("Russia probably interfered", "This did not happen")) + xlab("") + ylab("") + labs(fill="Party Affiliation", title = "Do you think the Russian government interfered in the 2016 election?")
 ```
 
+![Russia Investigation by Party Affiliation](q3_by_party.png)
+
 A particularly interesting feature of the data is that the responses almost completely align to party lines.  Data for respondents that voted for each of the identified parties - Republican, Democrat, and Independent, is depicted in the table below.
 
 ```{r}
 library(knitr)
+library(stargazer)
 Independent_Russia <- c(1.463, 1.517)
 Democrats_Russia <- c(1.056, 1.067)
 Republicans_Russia <- c(1.812, 1.892)
@@ -275,7 +278,7 @@ summary(anes_data$turnout16)
 summary(anes_data$turnout18)
 ```
 
-There are no non-responses, only respondents who are not sure if they voted, as per the codebook. Three response options exist for the 2016 election:  voted (1), didn't vote (2), and not sure (3).  The 2018 question expanded the options to five in order to capture the method the voting method of respondents:  in person on 6 Nov (1), in person before 6 Nov (2), by mail (3), didn't vote (4) and not sure (5). Filtering the results for confirmed voters in 2016 and 2018, an net increase of 1 exists between 2016 and 2018.  This outcome challenges the assumption in the posed question:  namely the premise that voter turnout increased from 2016 to 2018.
+There are no non-responses, only respondents who are not sure if they voted, as per the codebook. Three response options exist for the 2016 election:  voted (1), didn't vote (2), and not sure (3).  The 2018 question expanded the options to five in order to capture the method the voting method of respondents:  in person on 6 Nov (1), in person before 6 Nov (2), by mail (3), didn't vote (4) and not sure (5). Filtering the results for confirmed voters in 2016 and 2018, an net increase of 1 exists between 2016 and 2018.  This outcome challenges the assumption in the posed question,  namely the premise that voter turnout increased significantly from 2016 to 2018.
 
 ```{r}
 #get all of our voters from 2016 who are sure they voted
@@ -283,7 +286,7 @@ voters16 = anes_data[which(anes_data$turnout16 == 1),]
 
 #get all of our voters from 2018 who are sure they voted
 voters18 = anes_data[which(anes_data$turnout18 < 4),] 
-nrow(voters18) - nrow(voters16)
+nrow(voters18) - nrow(voters16) # difference of voters
 ```
 
 A variety of survey questions address fear and anger in respondents, a global question about the direction of the country as a whole, and specific questions about what emotions the respondents felt about Donald Trump. Responses from the global emotion portion of the survey were examined to initially evaluate fear and anger in voters.  The overall question posed was:  "Generally speaking, how do you feel about the way things are going in the country these days?" 10 different emotions were surveyed on a Likert scale.  Responses to two of these provide an indicator for fear and anger, though there is no way to attribute it directly to voter turnout: 
@@ -346,7 +349,6 @@ __Outcome.__
 We could test our hypotheses that the responses are different for the two questions:
 \begin{center}
  - $H_0: E(Fear) = E(Anger)$\
- 
  - $H_A: E(Fear) \neq E(Anger)$
 \end{center}
 
@@ -434,7 +436,7 @@ ggplot(q5frame, aes(x=factor(q5frame$follow), y=q5frame$faminc_new, fill=factor(
   scale_x_discrete(labels = c("Most of the time", "Some of the time", "Only now and then", "Hardly ever")) + 
   scale_y_continuous(name="Household Income", labels=c("$40k-$49k", "$100k-$119k", "$350k-$499k"), breaks=c(5, 10, 15))
 ```
-
+![Income and Follow Politics](q5_plot.png)
 
 The median family income for those who report following politics "closely "most of the time" does appear to be higher than those that report following it "hardly ever".
 
@@ -448,7 +450,6 @@ inActiveWithWealth = validWealthRespondents[which(as.numeric(validWealthResponde
 First we can look at whether the wealth levels for our "most of the time" respondents differ from all of our wealth respondents:
 \begin{center}
  - $H_0: E(Followers) = E(All)$.\
- 
  - $H_A: E(Followers) \neq E(All)$
  \end{center}
 
