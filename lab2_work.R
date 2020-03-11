@@ -61,6 +61,9 @@ republicanVoted = republican[which(republican$turnout18 < 4),]
 democrat.age = 2018 - democrat$birthyr
 republican.age = 2018 - republican$birthyr
 
+democratVoted.age = 2018 - democratVoted$birthyr
+republicanVoted.age = 2018 - republicanVoted$birthyr
+
 #make a list of dems
 parties = c( rep("republican", nrow(republican)), rep("democrat", nrow(democrat)))
 #make a list of repubs
@@ -68,10 +71,11 @@ party_colors = c( rep("ff0000", nrow(republican)), rep("0000ff", nrow(democrat))
 
 #make a dataframe for our q
 #question2frame = data.frame(party = factor(parties), age = c(2018 - republican$birthyr, 2018 - democrat$birthyr), colors = party_colors)
-question2frame = rbind(democratVoted, republicanVoted)
-question2frame2 = rbind(democrat, republican)
+question2frameVote = rbind(democratVoted, republicanVoted)
+question2frameAll = rbind(democrat, republican)
 #find the means
-age_dat = ddply(question2frame, "party", summarise, age.mean=mean(age))
+ageVoted = ddply(question2frameVote, question2frameVote$pid1d, summarise, age.mean=mean(age))
+ageAll = ddply(question2frameAll, question2frameAll$pid1d, summarise, age.mean=mean(age))
 #age_dat = data.frame(mean(question2frame$age))
 
 age_brackets = cut(2018 - question2frame$birthyr, 12, include.lowest=TRUE)
@@ -86,27 +90,23 @@ ggplot(question2frame, aes(x = 2018-birthyr, fill=pid1d)) +   # Fill column
 #  scale_fill_brewer(palette = "Set1")
 
 #density plots
-ggplot(question2frame2, aes(2018-birthyr)) + geom_density(aes(fill=factor(pid1d)), alpha=0.4) + 
+ggplot(question2frameAll, aes(2018-birthyr)) + geom_density(aes(fill=factor(pid1d)), alpha=0.4) + 
   labs(title="Age Distibution of All Respondents",  x="Age", fill="Party Affiliation") + 
-  scale_fill_manual(values=c("#0000ff", "#ff0000"),  breaks=c(1, 2), labels=c("Democrat", "Republican"))
+  scale_fill_manual(values=c("#0000ff", "#ff0000"),  breaks=c(1, 2), labels=c("Democrat", "Republican")) +
+  geom_vline(data=ageAll, xintercept = c(mean(democrat.age), mean(republican.age)), colour=c("#0000ff", "#ff0000"), linetype="dashed", size=1)
 
 
 ggplot(question2frame, aes(2018-birthyr)) + geom_density(aes(fill=factor(pid1d)), alpha=0.4) + 
   labs(title="Age Distibution of 2018 Election Voters", x="Age", fill="Party Affiliation") + 
-  scale_fill_manual(values=c("#0000ff", "#ff0000"),  breaks=c(1, 2), labels=c("Democrat", "Republican"))
+  scale_fill_manual(values=c("#0000ff", "#ff0000"),  breaks=c(1, 2), labels=c("Democrat", "Republican")) +
+  geom_vline(data=ageAll, xintercept = c(mean(democratVoted.age), mean(republicanVoted.age)), colour=c("#0000ff", "#ff0000"), linetype="dashed", size=1)
 
 #plot it
 ggplot(question2frame, aes(x = age, fill=party)) + geom_histogram(binwidth=5, position="dodge") + 
   facet_grid(party ~ .) + 
-  geom_vline(data=age_dat, aes(xintercept=age.mean), linetype="dashed", size=1) + 
+  geom_vline(data=ageAll, aes(xintercept=age.mean), linetype="dashed", size=1) + 
   xlab("Age") + 
   scale_fill_manual(values=c("#0000ff", "#ff0000"))
-
-voted <- anes_data$turnout18
-q2_vote = data.frame(party, age, voted)
-q2_vote <- q2_vote[which (q2_vote$party == c(1,2)),]  # isolate for [1,2] = [D,R]
-q2_vote <- q2_vote[which (q2_vote$voted == c(1,2,3)),] # isolate for those that voted 2018
-t.test(age ~ party, data = q2_vote)
 
 #I think we can just get away with a student t-test?
 t.test(2018 - republican$birthyr, 2018 - democrat$birthyr)
@@ -255,3 +255,17 @@ wilcox.test(activeWithWealth$faminc_new, validWealthRespondents$faminc_new)
 wilcox.test(inActiveWithWealth$faminc_new, validWealthRespondents$faminc_new)
 
 cor(validWealthRespondents$faminc_new, 4 - validWealthRespondents$follow, method = "spearman")
+
+install.packages("ggpubr")
+library(ggpubr)
+
+library(reshape2)
+toMelt = data.frame(validWealthRespondents$faminc_new, validWealthRespondents$follow)
+meltedWealth <- melt(toMelt, faminc_new = toMelt$faminc_new, follow=toMelt$follow)
+
+ggplot(validWealthRespondents, aes(faminc_new, follow), fill=count)+
+  geom_tile()+
+  scale_fill_gradient2(low = "blue", high = "red",
+                       midpoint = 500, limit = c(1,1000), space = "Lab",
+                       name="Spearman\nCorrelation") + coord_fixed()
+
