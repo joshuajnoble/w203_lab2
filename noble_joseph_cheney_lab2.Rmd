@@ -23,8 +23,8 @@ ANES studies use procedures known as complex sampling instead of simple random s
 
 
 ```{r}
-setwd("~/Desktop/w203_lab2/w203_lab2")
-anes_data = read.csv("~/Desktop/W203/homework/lab_2/anes_pilot_2018.csv")
+setwd("C:/Users/winbase/MIDS/w203/lab_2-master")
+anes_data = read.csv("anes_pilot_2018.csv")
 library(knitr)
 opts_chunk$set(tidy.opts=list(width.cutoff=50),tidy=TRUE)
 ```
@@ -330,7 +330,7 @@ All of these criteria are met recognizing that respondents answered a Likert-sca
 
 ```{r}
 voter_turnout_16_18 = anes_data[which (anes_data$turnout16==1 & anes_data$turnout18 < 4),] # isolate 2016 and 2018 voters
-summary(voter_turnout_18)
+summary(voter_turnout_16_18)
 ```
 
 The null hypothesis for the sign test is that the median of the paired differences is equal to zero.
