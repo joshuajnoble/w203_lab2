@@ -191,6 +191,7 @@ summary(russia_involvement$russia_2)
 
 ```{r}
 library("RColorBrewer")
+library(ggplot2)
 partyIdentified = data.frame(anes_data[which(anes_data$pid1d > 0 & anes_data$russia16 > 0 & anes_data$coord16 > 0),])
 russiaByParty = data.frame( party = partyIdentified$pid1d, russia = partyIdentified$russia16, coord = partyIdentified$coord16, mueller = partyIdentified$muellerinv )
 
